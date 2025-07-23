@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
-import heroImage from "@/assets/hero-image.jpg";
+import heroImage from "@/assets/hero-apple.jpg";
 
 const HeroSection = () => {
   const scrollToAPIs = () => {
@@ -9,58 +9,63 @@ const HeroSection = () => {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Image */}
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-secondary">
+      {/* Background with subtle pattern */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"
         style={{
           backgroundImage: `url(${heroImage})`,
         }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-background/60 to-background/80 backdrop-blur-sm" />
-      </div>
+      />
+      
+      {/* Glass morphism overlay */}
+      <div className="absolute inset-0 bg-gradient-glass backdrop-blur-glass" />
       
       {/* Content */}
       <div className="relative z-10 text-center max-w-4xl mx-auto px-6">
-        <div className="space-y-8">
-          <h1 className="text-5xl md:text-7xl font-bold bg-gradient-hero bg-clip-text text-transparent leading-tight animate-pulse">
-            ✨ Vision APIs for Fashion
-          </h1>
+        <div className="space-y-12 animate-fade-in">
+          {/* Main heading */}
+          <div className="space-y-4">
+            <h1 className="text-6xl md:text-8xl font-sf font-light tracking-tight text-foreground">
+              Vision
+            </h1>
+            <p className="text-xl md:text-2xl font-inter font-light text-muted-foreground">
+              Intelligence artificielle pour la mode
+            </p>
+          </div>
           
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            🎯 Transformez l'expérience digitale de vos marques avec nos APIs de vision par ordinateur intelligentes
+          {/* Description */}
+          <p className="text-lg font-inter text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            Trois APIs puissantes qui transforment la façon dont vos clients découvrent, 
+            essaient et achètent vos produits.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
+          {/* CTA */}
+          <div className="pt-8">
             <Button 
-              variant="lovable" 
-              size="xl"
               onClick={scrollToAPIs}
-              className="group shadow-glow"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-3 rounded-full font-inter font-medium shadow-medium hover:shadow-strong transition-all duration-300 hover:scale-105"
+              size="lg"
             >
-              🚀 Découvrir les APIs
-              <ArrowDown className="w-5 h-5 group-hover:translate-y-1 transition-transform duration-300" />
-            </Button>
-            
-            <Button variant="elegant" size="xl" className="group">
-              📚 Documentation
+              Découvrir
+              <ArrowDown className="w-4 h-4 ml-2" />
             </Button>
           </div>
         </div>
         
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-20 pt-16 border-t border-border/20">
-          <div className="text-center group hover:scale-110 transition-transform duration-300">
-            <div className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">3</div>
-            <div className="text-muted-foreground">🔥 APIs Puissantes</div>
+        {/* Subtle stats */}
+        <div className="grid grid-cols-3 gap-8 mt-20 pt-16 border-t border-border/30">
+          <div className="text-center space-y-1">
+            <div className="text-2xl font-sf font-semibold text-foreground">3</div>
+            <div className="text-sm font-inter text-muted-foreground">APIs</div>
           </div>
-          <div className="text-center group hover:scale-110 transition-transform duration-300">
-            <div className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">99.9%</div>
-            <div className="text-muted-foreground">🎯 Précision</div>
+          <div className="text-center space-y-1">
+            <div className="text-2xl font-sf font-semibold text-foreground">99.9%</div>
+            <div className="text-sm font-inter text-muted-foreground">Précision</div>
           </div>
-          <div className="text-center group hover:scale-110 transition-transform duration-300">
-            <div className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">&lt;500ms</div>
-            <div className="text-muted-foreground">⚡ Temps de réponse</div>
+          <div className="text-center space-y-1">
+            <div className="text-2xl font-sf font-semibold text-foreground">&lt;500ms</div>
+            <div className="text-sm font-inter text-muted-foreground">Latence</div>
           </div>
         </div>
       </div>
