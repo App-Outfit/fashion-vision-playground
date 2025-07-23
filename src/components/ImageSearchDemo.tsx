@@ -4,13 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload, Search, Image as ImageIcon, Loader2 } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Upload, Search, Image as ImageIcon, Loader2, Palette, Type } from "lucide-react";
 import { toast } from "sonner";
 
 const ImageSearchDemo = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imageTextBalance, setImageTextBalance] = useState([50]); // 0-100, 50 = équilibré
   const [results, setResults] = useState<string[]>([]);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -133,6 +135,42 @@ const ImageSearchDemo = () => {
                 onChange={(e) => setSearchText(e.target.value)}
                 className="mt-2"
               />
+            </div>
+
+            {/* Slider de pondération Image/Texte */}
+            <div className="space-y-4 p-4 bg-gradient-accent rounded-lg border border-border/50">
+              <Label className="text-sm font-semibold flex items-center gap-2">
+                <Palette className="w-4 h-4" />
+                Pondération Image vs Texte
+              </Label>
+              
+              <div className="space-y-3">
+                <Slider
+                  value={imageTextBalance}
+                  onValueChange={setImageTextBalance}
+                  max={100}
+                  min={0}
+                  step={1}
+                  className="w-full"
+                />
+                
+                <div className="flex justify-between items-center text-sm">
+                  <div className="flex items-center gap-1 text-muted-foreground">
+                    <ImageIcon className="w-4 h-4" />
+                    <span>Image ({100 - imageTextBalance[0]}%)</span>
+                  </div>
+                  
+                  <div className="px-3 py-1 bg-background rounded-md font-medium">
+                    {imageTextBalance[0] === 50 ? "🎯 Équilibré" : 
+                     imageTextBalance[0] > 50 ? "📝 Texte prioritaire" : "🖼️ Image prioritaire"}
+                  </div>
+                  
+                  <div className="flex items-center gap-1 text-muted-foreground">
+                    <Type className="w-4 h-4" />
+                    <span>Texte ({imageTextBalance[0]}%)</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </TabsContent>
           

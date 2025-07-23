@@ -21,41 +21,41 @@ const Index = () => {
   const apis = [
     {
       icon: Search,
-      title: "Recherche Cross-Modal",
-      description: "Recherchez par image, texte, ou combinaison des deux. Trouvez des produits similaires ou des variantes dans votre catalogue.",
+      title: "🔍 Recherche Cross-Modal",
+      description: "Recherchez par image, texte, ou combinaison des deux. Trouvez des produits similaires ou des variantes dans votre catalogue avec une précision inégalée.",
       useCases: [
         "Moteur de recherche intelligent",
-        "Recommandation visuelle",
-        "Recherche de variantes",
-        "Comparaison de produits"
+        "Recommandation visuelle personnalisée", 
+        "Recherche de variantes produits",
+        "Analyse comparative automatique"
       ],
       gradient: "bg-gradient-primary",
       apiType: "search" as const
     },
     {
       icon: Scissors,
-      title: "Segmentation Précise",
-      description: "Segmentation automatique des vêtements et parties du corps avec une précision de niveau professionnel.",
+      title: "✂️ Segmentation Précise",
+      description: "Segmentation automatique des vêtements et parties du corps avec une précision de niveau professionnel. Détection ultra-fine des contours.",
       useCases: [
-        "Essayage virtuel",
-        "Suppression d'arrière-plan",
-        "Extraction de vêtements",
-        "Analyse morphologique"
+        "Essayage virtuel immersif",
+        "Suppression d'arrière-plan intelligente",
+        "Extraction de vêtements automatique",
+        "Analyse morphologique détaillée"
       ],
-      gradient: "bg-gradient-to-r from-emerald-500 to-teal-600",
+      gradient: "bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-600",
       apiType: "segmentation" as const
     },
     {
       icon: Tag,
-      title: "Classification Multi-Label",
-      description: "Classification personnalisée avec vos propres labels. Analysez le style, les couleurs, les catégories.",
+      title: "🏷️ Classification Multi-Label",
+      description: "Classification personnalisée avec vos propres labels. Analysez le style, les couleurs, les catégories avec une flexibilité totale.",
       useCases: [
-        "Étiquetage automatique",
-        "Analyse de style",
-        "Enrichissement de catalogue",
-        "Filtrage intelligent"
+        "Étiquetage automatique intelligent",
+        "Analyse de style sophistiquée",
+        "Enrichissement de catalogue dynamique",
+        "Filtrage sémantique avancé"
       ],
-      gradient: "bg-gradient-to-r from-orange-500 to-red-600",
+      gradient: "bg-gradient-to-r from-orange-400 via-red-500 to-pink-600",
       apiType: "classification" as const
     }
   ];
@@ -65,14 +65,14 @@ const Index = () => {
       <HeroSection />
       
       {/* APIs Section */}
-      <section id="apis-section" className="py-20 px-6">
+      <section id="apis-section" className="py-24 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-foreground mb-4">
-              Nos APIs de Vision par Ordinateur
+          <div className="text-center mb-20">
+            <h2 className="text-5xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-6">
+              🚀 Nos APIs de Vision par Ordinateur
             </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Des outils puissants et faciles à intégrer pour transformer l'expérience digitale de vos marques de mode
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              ✨ Des outils puissants et faciles à intégrer pour transformer l'expérience digitale de vos marques de mode
             </p>
           </div>
           
@@ -93,13 +93,13 @@ const Index = () => {
       </section>
 
       {/* Integration Section */}
-      <section className="py-20 px-6 bg-card/30">
+      <section className="py-24 px-6 bg-gradient-card border-t border-border/20">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-foreground mb-8">
-            Intégration Simple et Rapide
+          <h2 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-8">
+            ⚡ Intégration Simple et Rapide
           </h2>
           
-          <div className="bg-card rounded-lg p-8 shadow-soft border border-border/50">
+          <div className="bg-gradient-card rounded-2xl p-8 shadow-glow border border-border/50 hover:shadow-strong transition-all duration-500">
             <div className="text-left">
               <div className="bg-muted p-4 rounded-md font-mono text-sm">
                 <div className="text-muted-foreground mb-2">// Exemple d'intégration</div>
