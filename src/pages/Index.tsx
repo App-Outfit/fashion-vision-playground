@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { User, Session } from "@supabase/supabase-js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +14,9 @@ import { toast } from "sonner";
 
 const Index = () => {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [credits, setCredits] = useState<number>(0);
 
   const copyToClipboard = (code: string, id: string) => {
     navigator.clipboard.writeText(code);
@@ -19,6 +24,57 @@ const Index = () => {
     toast.success("Code copié !");
     setTimeout(() => setCopiedCode(null), 2000);
   };
+
+  const fetchCredits = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('credits')
+      .eq('user_id', userId)
+      .single();
+    
+    if (data && !error) {
+      setCredits(data.credits);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/auth';
+  };
+
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          setTimeout(() => {
+            fetchCredits(session.user.id);
+          }, 0);
+        }
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        fetchCredits(session.user.id);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Redirect to auth if not logged in
+  if (!user) {
+    window.location.href = '/auth';
+    return null;
+  }
 
   const apis = [
     {
@@ -138,10 +194,13 @@ const predictions = await response.json();
               <p className="text-muted-foreground font-inter mt-1">Intelligence artificielle pour la mode</p>
             </div>
             <div className="flex items-center gap-4">
+              <div className="bg-card rounded-lg px-4 py-2 border">
+                <span className="text-sm text-muted-foreground">Crédits: </span>
+                <span className="font-bold text-primary">{credits}</span>
+              </div>
               <Badge variant="secondary" className="px-3 py-1">v1.0</Badge>
-              <Button variant="outline" size="sm">
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Documentation
+              <Button variant="outline" size="sm" onClick={handleSignOut}>
+                Déconnexion
               </Button>
             </div>
           </div>
