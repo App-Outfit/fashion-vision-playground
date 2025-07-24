@@ -42,5 +42,6 @@ node_modules/
 
 # env
 .env
-*.env
-backend/.env
+.venv
+*.venv
+backend/.venv
