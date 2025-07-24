@@ -99,7 +99,3 @@ Ready-to-use JavaScript fetch examples are available in the interface for each A
 ## Contributing
 
 Pull requests are welcome. Please document your changes clearly.
-
-## License
-
-MIT
