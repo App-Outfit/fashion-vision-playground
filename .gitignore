@@ -22,3 +22,25 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Ignore backend data and model files
+backend/app/data/checkpoints/
+backend/app/data/dataset_wearit/
+backend/app/data/embeddings.npy
+backend/app/data/faiss_index.index
+backend/app/data/metadonnees.json
+backend/app/data/SCHP/__pycache__/
+backend/app/data/SCHP/networks/__pycache__/
+backend/app/data/SCHP/utils/__pycache__/
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+# Ignore node_modules
+node_modules/
+
+# env
+.env
+*.env
+backend/.env

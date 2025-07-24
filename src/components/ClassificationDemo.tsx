@@ -13,7 +13,7 @@ const ClassificationDemo = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [customLabels, setCustomLabels] = useState<string[]>(["t-shirt", "robe", "pull", "pantalon", "veste"]);
   const [newLabel, setNewLabel] = useState("");
-  const [results, setResults] = useState<{ label: string; probability: number }[]>([]);
+  const [results, setResults] = useState<{ label: string; score: number }[]>([]);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -40,25 +40,29 @@ const ClassificationDemo = () => {
       toast.error("Veuillez d'abord uploader une image");
       return;
     }
-
     if (customLabels.length === 0) {
       toast.error("Veuillez ajouter au moins un label");
       return;
     }
-
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      const mockResults = customLabels.map(label => ({
-        label,
-        probability: Math.random() * 100
-      })).sort((a, b) => b.probability - a.probability);
-      
-      setResults(mockResults);
-      setIsLoading(false);
+    setResults([]);
+    try {
+      const formData = new FormData();
+      formData.append("image", selectedImage);
+      formData.append("labels", customLabels.join(","));
+      const res = await fetch("http://localhost:8000/api/v1/classify/", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) throw new Error("Erreur API");
+      const data = await res.json();
+      setResults(data.results || []);
       toast.success("Classification terminée");
-    }, 2500);
+    } catch (e: any) {
+      toast.error(e.message || "Erreur lors de la classification");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -76,7 +80,7 @@ const ClassificationDemo = () => {
       <CardContent className="space-y-6">
         <div>
           <Label htmlFor="class-image-upload">Uploadez une image</Label>
-          <div className="mt-2">
+          <div className="mt-2 flex flex-col items-center">
             <input
               id="class-image-upload"
               type="file"
@@ -84,23 +88,32 @@ const ClassificationDemo = () => {
               onChange={handleImageUpload}
               className="hidden"
             />
-            <Button
-              variant="outline"
-              onClick={() => document.getElementById('class-image-upload')?.click()}
-              className="w-full h-32 flex flex-col gap-2"
-            >
-              {selectedImage ? (
-                <>
-                  <ImageIcon className="w-8 h-8" />
-                  <span>{selectedImage.name}</span>
-                </>
-              ) : (
-                <>
-                  <Upload className="w-8 h-8" />
-                  <span>Cliquez pour uploader une image</span>
-                </>
-              )}
-            </Button>
+            {selectedImage ? (
+              <div className="flex flex-col items-center w-full mb-2">
+                <img
+                  src={URL.createObjectURL(selectedImage)}
+                  alt="uploaded"
+                  className="object-contain h-48 w-auto rounded shadow mb-2"
+                />
+                <span className="font-inter text-xs text-muted-foreground mb-2">{selectedImage.name}</span>
+                <Button
+                  variant="outline"
+                  onClick={() => setSelectedImage(null)}
+                  size="sm"
+                >
+                  Supprimer l'image
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={() => document.getElementById('class-image-upload')?.click()}
+                className="w-full h-32 flex flex-col gap-2"
+              >
+                <Upload className="w-8 h-8" />
+                <span>Cliquez pour uploader une image</span>
+              </Button>
+            )}
           </div>
         </div>
 
@@ -161,10 +174,10 @@ const ClassificationDemo = () => {
                   <div className="flex justify-between items-center">
                     <span className="font-medium capitalize">{result.label}</span>
                     <span className="text-sm text-muted-foreground">
-                      {result.probability.toFixed(1)}%
+                      {(result.score * 100).toFixed(1)}%
                     </span>
                   </div>
-                  <Progress value={result.probability} className="h-2" />
+                  <Progress value={result.score * 100} className="h-2" />
                 </div>
               ))}
             </div>
@@ -172,7 +185,7 @@ const ClassificationDemo = () => {
             <div className="bg-accent/20 p-4 rounded-lg">
               <h4 className="font-medium mb-2">Label le plus probable :</h4>
               <Badge variant="default" className="text-lg px-4 py-2">
-                {results[0]?.label} ({results[0]?.probability.toFixed(1)}%)
+                {results[0]?.label} ({(results[0]?.score * 100).toFixed(1)}%)
               </Badge>
             </div>
           </div>

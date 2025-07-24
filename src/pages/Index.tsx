@@ -17,6 +17,7 @@ const Index = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [credits, setCredits] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   const copyToClipboard = (code: string, id: string) => {
     navigator.clipboard.writeText(code);
@@ -48,7 +49,7 @@ const Index = () => {
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
-        
+        setIsLoading(false);
         if (session?.user) {
           setTimeout(() => {
             fetchCredits(session.user.id);
@@ -61,7 +62,7 @@ const Index = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      
+      setIsLoading(false);
       if (session?.user) {
         fetchCredits(session.user.id);
       }
@@ -70,6 +71,9 @@ const Index = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  if (isLoading) {
+    return null;
+  }
   // Redirect to auth if not logged in
   if (!user) {
     window.location.href = '/auth';

@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+transformers
+torch
+faiss-cpu
+pillow
+python-multipart
+numpy
+scikit-learn
+matplotlib

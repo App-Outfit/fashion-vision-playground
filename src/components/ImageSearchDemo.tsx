@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,8 @@ const ImageSearchDemo = () => {
   const [searchText, setSearchText] = useState("");
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imageTextBalance, setImageTextBalance] = useState([50]);
-  const [results, setResults] = useState<string[]>([]);
+  const [results, setResults] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState("combined");
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -23,18 +24,51 @@ const ImageSearchDemo = () => {
     }
   };
 
+  // Reset image or text when switching tabs
+  useEffect(() => {
+    if (activeTab === "text") {
+      setSelectedImage(null);
+    } else if (activeTab === "image") {
+      setSearchText("");
+    }
+    // For 'combined', do nothing (keep both)
+  }, [activeTab]);
+
   const handleSearch = async () => {
     setIsLoading(true);
-    setTimeout(() => {
-      setResults([
-        "Robe similaire • Confiance 94%",
-        "Variante coloris • Confiance 87%", 
-        "Style comparable • Confiance 81%",
-        "Alternative • Confiance 76%"
-      ]);
-      setIsLoading(false);
+    setResults([]);
+    try {
+      const formData = new FormData();
+      let alpha = imageTextBalance[0] / 100;
+      // Cas 1 : image + texte
+      if (activeTab === "combined" && selectedImage && searchText) {
+        formData.append("image", selectedImage);
+        formData.append("text", searchText);
+        // alpha = slider
+      } else if (activeTab === "image" && selectedImage) {
+        formData.append("image", selectedImage);
+        // Pas de text, alpha = 0 (full image)
+        alpha = 0;
+      } else if (activeTab === "text" && searchText) {
+        formData.append("text", searchText);
+        // Pas d'image, alpha = 1 (full text)
+        alpha = 1;
+      }
+      formData.append("alpha", alpha.toString());
+      formData.append("top_k", "6");
+      const res = await fetch("http://localhost:8000/api/v1/search/", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) throw new Error("Erreur API");
+      const data = await res.json();
+      setResults(data.results || []);
       toast.success("Recherche terminée");
-    }, 2000);
+    } catch (e: any) {
+      toast.error(e.message || "Erreur lors de la recherche");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getBalanceText = () => {
@@ -63,7 +97,7 @@ const ImageSearchDemo = () => {
       </CardHeader>
       
       <CardContent>
-        <Tabs defaultValue="combined" className="space-y-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="combined" className="space-y-8">
           <TabsList className="grid w-full grid-cols-3 bg-muted/50">
             <TabsTrigger value="text" className="font-inter">Texte</TabsTrigger>
             <TabsTrigger value="image" className="font-inter">Image</TabsTrigger>
@@ -85,7 +119,7 @@ const ImageSearchDemo = () => {
           <TabsContent value="image" className="space-y-6">
             <div className="space-y-3">
               <Label className="font-inter font-medium">Image de référence</Label>
-              <div className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary/50 transition-colors">
+              <div className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary/50 transition-colors flex flex-col items-center justify-center min-h-[200px]">
                 <input
                   type="file"
                   accept="image/*"
@@ -93,23 +127,32 @@ const ImageSearchDemo = () => {
                   className="hidden"
                   id="image-upload"
                 />
-                <Button
-                  variant="ghost"
-                  onClick={() => document.getElementById('image-upload')?.click()}
-                  className="w-full h-full flex flex-col gap-3 py-8"
-                >
-                  {selectedImage ? (
-                    <>
-                      <ImageIcon className="w-8 h-8 text-primary" />
-                      <span className="font-inter">{selectedImage.name}</span>
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-8 h-8 text-muted-foreground" />
-                      <span className="font-inter text-muted-foreground">Télécharger une image</span>
-                    </>
-                  )}
-                </Button>
+                {selectedImage ? (
+                  <div className="flex flex-col items-center w-full">
+                    <img
+                      src={URL.createObjectURL(selectedImage)}
+                      alt="uploaded"
+                      className="object-contain h-48 w-auto rounded shadow mb-2"
+                    />
+                    <span className="font-inter text-xs text-muted-foreground mb-2">{selectedImage.name}</span>
+                    <Button
+                      variant="outline"
+                      onClick={() => setSelectedImage(null)}
+                      size="sm"
+                    >
+                      Supprimer l'image
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    onClick={() => document.getElementById('image-upload')?.click()}
+                    className="w-full h-full flex flex-col gap-3 py-8"
+                  >
+                    <Upload className="w-8 h-8 text-muted-foreground" />
+                    <span className="font-inter text-muted-foreground">Télécharger une image</span>
+                  </Button>
+                )}
               </div>
             </div>
           </TabsContent>
@@ -118,7 +161,7 @@ const ImageSearchDemo = () => {
             {/* Image upload */}
             <div className="space-y-3">
               <Label className="font-inter font-medium">Image de référence</Label>
-              <div className="border border-border rounded-xl p-6 text-center hover:bg-accent/50 transition-colors">
+              <div className="border border-border rounded-xl p-6 text-center hover:bg-accent/50 transition-colors flex flex-col items-center justify-center min-h-[200px]">
                 <input
                   type="file"
                   accept="image/*"
@@ -126,16 +169,34 @@ const ImageSearchDemo = () => {
                   className="hidden"
                   id="image-upload-combined"
                 />
-                <Button
-                  variant="ghost"
-                  onClick={() => document.getElementById('image-upload-combined')?.click()}
-                  className="w-full flex items-center gap-3 py-4"
-                >
-                  <Upload className="w-5 h-5" />
-                  <span className="font-inter">
-                    {selectedImage ? selectedImage.name : "Choisir une image"}
-                  </span>
-                </Button>
+                {selectedImage ? (
+                  <div className="flex flex-col items-center w-full">
+                    <img
+                      src={URL.createObjectURL(selectedImage)}
+                      alt="uploaded"
+                      className="object-contain h-48 w-auto rounded shadow mb-2"
+                    />
+                    <span className="font-inter text-xs text-muted-foreground mb-2">{selectedImage.name}</span>
+                    <Button
+                      variant="outline"
+                      onClick={() => setSelectedImage(null)}
+                      size="sm"
+                    >
+                      Supprimer l'image
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    onClick={() => document.getElementById('image-upload-combined')?.click()}
+                    className="w-full flex items-center gap-3 py-4"
+                  >
+                    <Upload className="w-5 h-5" />
+                    <span className="font-inter">
+                      Choisir une image
+                    </span>
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -242,10 +303,15 @@ const ImageSearchDemo = () => {
                     key={index} 
                     className="p-4 bg-background/50 rounded-xl border border-border/50 hover:shadow-medium transition-all duration-300 hover:scale-105"
                   >
-                    <div className="bg-gradient-secondary h-32 rounded-lg mb-3 flex items-center justify-center">
-                      <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                    <div className="bg-gradient-secondary h-32 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
+                      {result.image_path ? (
+                        <img src={`http://localhost:8000/static/${result.image_path}`} alt={result.label} className="object-contain h-full w-full" />
+                      ) : (
+                        <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                      )}
                     </div>
-                    <p className="font-inter text-sm">{result}</p>
+                    <p className="font-inter text-sm font-semibold">{result.label}</p>
+                    <p className="font-inter text-xs text-muted-foreground">Score : {(result.score * 100).toFixed(1)}%</p>
                   </div>
                 ))}
               </div>
