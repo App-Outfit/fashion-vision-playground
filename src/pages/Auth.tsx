@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLogin, setIsLogin] = useState(true);
+  // Suppression du mode inscription : on force le mode connexion
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -17,25 +17,13 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
-        toast({ title: "Connexion réussie!" });
-        window.location.href = '/';
-      } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`
-          }
-        });
-        if (error) throw error;
-        toast({ title: "Inscription réussie! Vérifiez votre email." });
-      }
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
+      toast({ title: "Connexion réussie!" });
+      window.location.href = '/';
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -51,9 +39,7 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-center">
-            {isLogin ? "Connexion" : "Inscription"}
-          </CardTitle>
+          <CardTitle className="text-center">Connexion</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleAuth} className="space-y-4">
@@ -76,18 +62,10 @@ const Auth = () => {
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "..." : isLogin ? "Se connecter" : "S'inscrire"}
+              {loading ? "..." : "Se connecter"}
             </Button>
           </form>
-          <div className="mt-4 text-center">
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-sm text-muted-foreground hover:text-foreground"
-            >
-              {isLogin ? "Pas de compte? S'inscrire" : "Déjà un compte? Se connecter"}
-            </button>
-          </div>
+          {/* Suppression du bouton d'inscription */}
         </CardContent>
       </Card>
     </div>

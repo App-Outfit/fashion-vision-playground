@@ -108,9 +108,11 @@ const SegmentationDemo = ({ fetchCredits, userId }: Props) => {
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Scissors className="w-6 h-6 text-primary" />
-          API de Segmentation Précise
+        <CardTitle className="text-2xl font-sf font-semibold flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
+            <Scissors className="w-4 h-4 text-green-600" />
+          </div>
+          Segmentation
         </CardTitle>
         <CardDescription>
           Segmentation automatique des vêtements et parties du corps

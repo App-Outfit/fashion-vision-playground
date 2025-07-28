@@ -88,9 +88,11 @@ const ClassificationDemo = ({ fetchCredits, userId }: Props) => {
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Tag className="w-6 h-6 text-primary" />
-          API de Classification Multi-Label
+        <CardTitle className="text-2xl font-sf font-semibold flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
+            <Tag className="w-4 h-4 text-orange-600" />
+          </div>
+          Classification Intelligente
         </CardTitle>
         <CardDescription>
           Classification personnalisée avec vos propres labels

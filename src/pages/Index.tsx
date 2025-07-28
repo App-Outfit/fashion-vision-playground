@@ -333,10 +333,30 @@ print(response.json())
 
           <Tabs defaultValue="search" className="space-y-8">
             <TabsList className="grid w-full grid-cols-4 bg-muted/50 p-1">
-              <TabsTrigger value="search" className="font-inter">Recherche</TabsTrigger>
-              <TabsTrigger value="segmentation" className="font-inter">Segmentation</TabsTrigger>
-              <TabsTrigger value="classification" className="font-inter">Classification</TabsTrigger>
-              <TabsTrigger value="detection" className="font-inter">Détection objets</TabsTrigger>
+              <TabsTrigger value="search" className="font-inter flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-50 mr-2">
+                  <Search className="w-4 h-4 text-blue-600" />
+                </span>
+                Recherche
+              </TabsTrigger>
+              <TabsTrigger value="segmentation" className="font-inter flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 mr-2">
+                  <Scissors className="w-4 h-4 text-green-600" />
+                </span>
+                Segmentation
+              </TabsTrigger>
+              <TabsTrigger value="classification" className="font-inter flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 mr-2">
+                  <Tag className="w-4 h-4 text-orange-600" />
+                </span>
+                Classification
+              </TabsTrigger>
+              <TabsTrigger value="detection" className="font-inter flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-fuchsia-100 mr-2">
+                  <ScanBarcode className="w-4 h-4 text-fuchsia-600" />
+                </span>
+                Détection objets
+              </TabsTrigger>
             </TabsList>
             
             <TabsContent value="search">
@@ -371,10 +391,30 @@ print(response.json())
 
           <Tabs defaultValue="search" className="space-y-6">
             <TabsList className="grid w-full grid-cols-4 bg-muted/50 p-1">
-              <TabsTrigger value="search" className="font-inter">Recherche</TabsTrigger>
-              <TabsTrigger value="segmentation" className="font-inter">Segmentation</TabsTrigger>
-              <TabsTrigger value="classification" className="font-inter">Classification</TabsTrigger>
-              <TabsTrigger value="detection" className="font-inter">Détection objets</TabsTrigger>
+              <TabsTrigger value="search" className="font-inter flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-50 mr-2">
+                  <Search className="w-4 h-4 text-blue-600" />
+                </span>
+                Recherche
+              </TabsTrigger>
+              <TabsTrigger value="segmentation" className="font-inter flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 mr-2">
+                  <Scissors className="w-4 h-4 text-green-600" />
+                </span>
+                Segmentation
+              </TabsTrigger>
+              <TabsTrigger value="classification" className="font-inter flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-orange-100 mr-2">
+                  <Tag className="w-4 h-4 text-orange-600" />
+                </span>
+                Classification
+              </TabsTrigger>
+              <TabsTrigger value="detection" className="font-inter flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-fuchsia-100 mr-2">
+                  <ScanBarcode className="w-4 h-4 text-fuchsia-600" />
+                </span>
+                Détection objets
+              </TabsTrigger>
             </TabsList>
             
             {Object.entries(codeExamples).map(([key, code]) => (

@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Upload, Loader2 } from "lucide-react";
+import { ScanBarcode, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import React from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -148,15 +148,17 @@ const ObjectDetectionDemo = ({ fetchCredits, userId }: Props) => {
     <Card className="w-full max-w-3xl mx-auto border-0 shadow-medium bg-card/60 backdrop-blur-sm">
       <CardHeader>
         <CardTitle className="text-2xl font-sf font-semibold flex items-center gap-3">
-          <span className="w-8 h-8 rounded-lg bg-gradient-hero flex items-center justify-center">
-            <Upload className="w-4 h-4 text-white" />
-          </span>
-          Détection d'objets fashion
+          <div className="w-8 h-8 rounded-lg bg-fuchsia-100 flex items-center justify-center">
+            <ScanBarcode className="w-4 h-4 text-fuchsia-600" />
+          </div>
+          Détection d'Objets Mode
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-8">
         <div className="space-y-3">
-          <Label className="font-inter font-medium">Image à analyser</Label>
+          <Label htmlFor="image-upload" className="font-medium">
+            Uploadez une image
+          </Label>
           <div className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary/50 transition-colors flex flex-col items-center justify-center min-h-[200px]">
             <input
               type="file"
@@ -211,7 +213,7 @@ const ObjectDetectionDemo = ({ fetchCredits, userId }: Props) => {
                 onClick={() => document.getElementById('object-detect-upload')?.click()}
                 className="w-full h-full flex flex-col gap-3 py-8"
               >
-                <Upload className="w-8 h-8 text-muted-foreground" />
+                <ScanBarcode className="w-8 h-8 text-muted-foreground" />
                 <span className="font-inter text-muted-foreground">Télécharger une image</span>
               </Button>
             )}

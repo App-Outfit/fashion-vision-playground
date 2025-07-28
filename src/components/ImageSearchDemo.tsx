@@ -109,8 +109,8 @@ const ImageSearchDemo = ({ fetchCredits, userId }: Props) => {
     <Card className="w-full max-w-4xl mx-auto border-0 shadow-medium bg-card/60 backdrop-blur-sm">
       <CardHeader className="pb-6">
         <CardTitle className="text-2xl font-sf font-semibold flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-hero flex items-center justify-center">
-            <Search className="w-4 h-4 text-white" />
+          <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+            <Search className="w-4 h-4 text-blue-600" />
           </div>
           Recherche Cross-Modal
         </CardTitle>
