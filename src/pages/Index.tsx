@@ -6,12 +6,55 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Search, Scissors, Tag, Code, ExternalLink, Copy, Check, ScanBarcode } from "lucide-react";
+import { Search, Scissors, Tag, Code, ExternalLink, Copy, Check, ScanBarcode, Eye, EyeOff } from "lucide-react";
 import ImageSearchDemo from "@/components/ImageSearchDemo";
 import SegmentationDemo from "@/components/SegmentationDemo";
 import ClassificationDemo from "@/components/ClassificationDemo";
 import ObjectDetectionDemo from "@/components/ObjectDetectionDemo";
 import { toast } from "sonner";
+
+function TokenDev() {
+  const [token, setToken] = useState("");
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    import("@/integrations/supabase/client").then(({ supabase }) => {
+      supabase.auth.getSession().then(({ data }) => {
+        setToken(data.session?.access_token || "");
+      });
+    });
+  }, []);
+  return (
+    <div className="flex items-center gap-2 mt-2">
+      <span className="font-medium text-xs text-muted-foreground">Token API :</span>
+      <input
+        type={show ? "text" : "password"}
+        value={token}
+        readOnly
+        className="font-mono text-xs bg-muted px-2 py-1 rounded border w-full max-w-xs"
+        style={{ minWidth: 0 }}
+      />
+      <button
+        className="ml-1 p-1 rounded hover:bg-muted transition"
+        onClick={() => setShow((s) => !s)}
+        title={show ? "Masquer" : "Afficher"}
+        type="button"
+      >
+        {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+      </button>
+      <button
+        className="ml-1 p-1 rounded bg-black text-white hover:bg-gray-800 transition"
+        onClick={() => {
+          navigator.clipboard.writeText(token);
+          toast.success("Token copié dans le presse-papier !");
+        }}
+        title="Copier le token"
+        type="button"
+      >
+        <Copy className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
 
 const Index = () => {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -125,74 +168,67 @@ const Index = () => {
   ];
 
   const codeExamples = {
-    search: `// Recherche cross-modal
-const response = await fetch('/api/v1/search', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'Bearer YOUR_API_KEY',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    image: base64Image,
-    text: "robe rouge élégante",
-    balance: 0.7, // 70% texte, 30% image
-    limit: 10
-  })
-});
+    search: `# Recherche cross-modal (Python)
+import requests
 
-const results = await response.json();
-// { "results": [{"id": "...", "score": 0.95, "metadata": {...}}] }`,
+API_URL = "http://localhost:8000/api/v1/search/"
+TOKEN = "VOTRE_TOKEN_ICI"
 
-    segmentation: `// Segmentation précise
-const formData = new FormData();
-formData.append('image', imageFile);
-formData.append('mode', 'clothing'); // 'body', 'face', 'all'
+files = {
+    "image": open("image.jpg", "rb"),
+}
+data = {
+    "text": "robe rouge élégante",
+    "alpha": "0.7",
+    "top_k": "5"
+}
+headers = {"Authorization": f"Bearer {TOKEN}"}
+response = requests.post(API_URL, files=files, data=data, headers=headers)
+print(response.status_code)
+print(response.json())
+# Résultat: { "results": [{"id": "...", "score": 0.95, "metadata": {...}}] }
+`,
+    segmentation: `# Segmentation (Python)
+import requests
 
-const response = await fetch('/api/v1/segment', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'Bearer YOUR_API_KEY'
-  },
-  body: formData
-});
+API_URL = "http://localhost:8000/api/v1/segment/"
+TOKEN = "VOTRE_TOKEN_ICI"
 
-const result = await response.json();
-// { "masks": {...}, "detections": [...], "confidence": 0.98 }`,
+with open("image.jpg", "rb") as f:
+    files = {"image": f}
+    headers = {"Authorization": f"Bearer {TOKEN}"}
+    response = requests.post(API_URL, files=files, headers=headers)
+print(response.status_code)
+print(response.json())
+# Résultat: { "result": { "mask_color_base64": "...", "labels": [...] } }
+`,
+    classification: `# Classification multi-label (Python)
+import requests
 
-    classification: `// Classification personnalisée
-const response = await fetch('/api/v1/classify', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'Bearer YOUR_API_KEY',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    image: base64Image,
-    labels: ["casual", "formal", "sport", "elegant"],
-    threshold: 0.5
-  })
-});
+API_URL = "http://localhost:8000/api/v1/classify/"
+TOKEN = "VOTRE_TOKEN_ICI"
 
-const predictions = await response.json();
-// { "predictions": [{"label": "elegant", "score": 0.92}] }`,
+files = {"image": open("image.jpg", "rb")}
+data = {"labels": "t-shirt,robe,jean"}
+headers = {"Authorization": f"Bearer {TOKEN}"}
+response = requests.post(API_URL, files=files, data=data, headers=headers)
+print(response.status_code)
+print(response.json())
+# Résultat: { "results": [{"label": "t-shirt", "score": 0.92}, ...] }
+`,
+    detection: `# Détection d'objets mode (Python)
+import requests
 
-    detection: `// Détection d'objets mode
-const formData = new FormData();
-formData.append('image', imageFile);
+API_URL = "http://localhost:8000/api/v1/detect/"
+TOKEN = "VOTRE_TOKEN_ICI"
 
-const response = await fetch('/api/v1/detect', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'Bearer YOUR_API_KEY'
-  },
-  body: formData
-});
-
-const result = await response.json();
-// { "detected_objects": [
-//   { "label": "t-shirt", "score": 0.98, "box": [x1, y1, x2, y2] },
-//   ...
-// ] }
+with open("image.jpg", "rb") as f:
+    files = {"image": f}
+    headers = {"Authorization": f"Bearer {TOKEN}"}
+    response = requests.post(API_URL, files=files, headers=headers)
+print(response.status_code)
+print(response.json())
+# Résultat: { "detected_objects": [ { "label": "t-shirt", "score": 0.98, "box": [x1, y1, x2, y2] }, ... ] }
 `
   };
 
@@ -330,6 +366,7 @@ const result = await response.json();
             <p className="text-muted-foreground">
               Exemples de code prêts à copier-coller
             </p>
+            <TokenDev />
           </div>
 
           <Tabs defaultValue="search" className="space-y-6">
