@@ -11,18 +11,22 @@ class FashionClipSingleton:
     _instance = None
 
     @classmethod
-    def get_instance(cls):
+    def get_instance(cls, device=None):
         if cls._instance is None:
-            cls._instance = cls()
+            cls._instance = cls(device)
         return cls._instance
 
-    def __init__(self):
+    def __init__(self, device=None):
         # --- Load model and processor ---
         self.model_name = "patrickjohncyh/fashion-clip"
         self.processor = CLIPProcessor.from_pretrained(self.model_name)
         self.model = CLIPModel.from_pretrained(self.model_name)
         self.model.eval()
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        if device is None:
+            self.device = torch.device("cpu")
+        else:
+            self.device = torch.device(device)
+        print(f"[INFO] FashionCLIP device: {self.device}")
         self.model.to(self.device)
 
         # --- Load embeddings, index, metadata ---
@@ -33,7 +37,9 @@ class FashionClipSingleton:
             self.metadonnees = json.load(f)
 
         # --- Zero-shot pipeline for multi-label ---
-        self.zero_shot_pipe = pipeline("zero-shot-image-classification", model=self.model_name, device=0 if torch.cuda.is_available() else -1)
+        # device=0 pour GPU, -1 pour CPU
+        pipe_device = 0 if self.device.type == "cuda" else -1
+        self.zero_shot_pipe = pipeline("zero-shot-image-classification", model=self.model_name, device=pipe_device)
 
     def _encode_image(self, image: Image.Image):
         inputs = self.processor(images=image, return_tensors="pt").to(self.device)

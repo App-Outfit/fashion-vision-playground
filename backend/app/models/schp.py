@@ -62,18 +62,21 @@ class SCHPSingleton:
     _instance = None
 
     @classmethod
-    def get_instance(cls):
+    def get_instance(cls, device=None):
         if cls._instance is None:
-            cls._instance = cls()
+            cls._instance = cls(device)
         return cls._instance
 
-    def __init__(self):
-        DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+    def __init__(self, device=None):
+        if device is None:
+            self.device = "cpu"
+        else:
+            self.device = device
+        print(f"[INFO] SCHP device: {self.device}")
         data_dir = os.path.join(os.path.dirname(__file__), "../data")
         ckpt_dir = os.path.join(data_dir, "checkpoints")
-        self.schp_atr = SCHP(ckpt_path=os.path.join(ckpt_dir, "exp-schp-201908301523-atr.pth"), device=DEVICE)
-        self.schp_lip = SCHP(ckpt_path=os.path.join(ckpt_dir, "exp-schp-201908261155-lip.pth"), device=DEVICE)
-        self.device = DEVICE
+        self.schp_atr = SCHP(ckpt_path=os.path.join(ckpt_dir, "exp-schp-201908301523-atr.pth"), device=self.device)
+        self.schp_lip = SCHP(ckpt_path=os.path.join(ckpt_dir, "exp-schp-201908261155-lip.pth"), device=self.device)
 
     def segment(self, image: UploadFile):
         try:

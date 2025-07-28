@@ -9,15 +9,19 @@ class FashionObjectDetector:
     _instance = None
 
     @classmethod
-    def get_instance(cls):
+    def get_instance(cls, device=None):
         if cls._instance is None:
-            cls._instance = cls()
+            cls._instance = cls(device)
         return cls._instance
 
-    def __init__(self):
+    def __init__(self, device=None):
         self.processor = AutoImageProcessor.from_pretrained(MODEL_ID)
         self.model = AutoModelForObjectDetection.from_pretrained(MODEL_ID)
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        if device is None:
+            self.device = torch.device("cpu")
+        else:
+            self.device = torch.device(device)
+        print(f"[INFO] ObjectDetection device: {self.device}")
         self.model.to(self.device)
 
     def detect(self, image: Union[str, Image.Image], threshold: float = 0.3) -> List[Dict]:
