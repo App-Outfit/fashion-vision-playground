@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+*.pyo
+*.ipynb
+*.log
+*.md
+venv/
+app/data/dataset_wearit/
