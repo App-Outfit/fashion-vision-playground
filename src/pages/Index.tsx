@@ -10,6 +10,7 @@ import { Search, Scissors, Tag, Code, ExternalLink, Copy, Check } from "lucide-r
 import ImageSearchDemo from "@/components/ImageSearchDemo";
 import SegmentationDemo from "@/components/SegmentationDemo";
 import ClassificationDemo from "@/components/ClassificationDemo";
+import ObjectDetectionDemo from "@/components/ObjectDetectionDemo";
 import { toast } from "sonner";
 
 const Index = () => {
@@ -260,10 +261,11 @@ const predictions = await response.json();
           </div>
 
           <Tabs defaultValue="search" className="space-y-8">
-            <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1">
+            <TabsList className="grid w-full grid-cols-4 bg-muted/50 p-1">
               <TabsTrigger value="search" className="font-inter">Recherche</TabsTrigger>
               <TabsTrigger value="segmentation" className="font-inter">Segmentation</TabsTrigger>
               <TabsTrigger value="classification" className="font-inter">Classification</TabsTrigger>
+              <TabsTrigger value="detection" className="font-inter">Détection objets</TabsTrigger>
             </TabsList>
             
             <TabsContent value="search">
@@ -276,6 +278,10 @@ const predictions = await response.json();
             
             <TabsContent value="classification">
               <ClassificationDemo />
+            </TabsContent>
+
+            <TabsContent value="detection">
+              <ObjectDetectionDemo />
             </TabsContent>
           </Tabs>
         </section>
