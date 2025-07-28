@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Search, Scissors, Tag, Code, ExternalLink, Copy, Check } from "lucide-react";
+import { Search, Scissors, Tag, Code, ExternalLink, Copy, Check, ScanBarcode } from "lucide-react";
 import ImageSearchDemo from "@/components/ImageSearchDemo";
 import SegmentationDemo from "@/components/SegmentationDemo";
 import ClassificationDemo from "@/components/ClassificationDemo";
@@ -111,6 +111,16 @@ const Index = () => {
       features: ["Labels personnalisés", "Multi-classification", "Scores de confiance", "Adaptation métier"],
       color: "text-orange-600",
       bgColor: "bg-orange-50"
+    },
+    {
+      id: "detection",
+      icon: ScanBarcode,
+      title: "Détection d'Objets Mode",
+      endpoint: "POST /api/v1/detect",
+      description: "Détection automatique et localisation des vêtements, accessoires et objets de mode sur une image.",
+      features: ["Détection multi-objets", "Coordonnées précises (bounding box)", "Confiance par objet", "Support accessoires & vêtements"],
+      color: "text-fuchsia-700",
+      bgColor: "bg-fuchsia-50"
     }
   ];
 
@@ -164,27 +174,52 @@ const response = await fetch('/api/v1/classify', {
 });
 
 const predictions = await response.json();
-// { "predictions": [{"label": "elegant", "score": 0.92}] }`
+// { "predictions": [{"label": "elegant", "score": 0.92}] }`,
+
+    detection: `// Détection d'objets mode
+const formData = new FormData();
+formData.append('image', imageFile);
+
+const response = await fetch('/api/v1/detect', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY'
+  },
+  body: formData
+});
+
+const result = await response.json();
+// { "detected_objects": [
+//   { "label": "t-shirt", "score": 0.98, "box": [x1, y1, x2, y2] },
+//   ...
+// ] }
+`
   };
 
   const useCases = [
     {
       title: "E-commerce Fashion",
-      description: "Recherche visuelle instantanée, recommandations produits et essayage virtuel",
-      apis: ["search", "segmentation"],
+      description: "Recherche visuelle instantanée, recommandations produits, détection d'objets et essayage virtuel",
+      apis: ["search", "segmentation", "detection"],
       impact: "+35% conversion"
     },
     {
       title: "Gestion Catalogue",
-      description: "Classification automatique, enrichissement métadonnées et détection doublons",
-      apis: ["classification", "search"],
+      description: "Classification automatique, enrichissement métadonnées, détection d'objets et détection doublons",
+      apis: ["classification", "search", "detection"],
       impact: "-80% temps"
     },
     {
       title: "Essayage AR/VR",
-      description: "Segmentation morphologie, adaptation vêtements et rendu réaliste",
-      apis: ["segmentation"],
+      description: "Segmentation morphologie, adaptation vêtements, rendu réaliste et détection d'accessoires",
+      apis: ["segmentation", "detection"],
       impact: "+60% engagement"
+    },
+    {
+      title: "Détection d'Objets Mode",
+      description: "Localisation automatique des vêtements et accessoires sur les photos produits, influenceurs ou clients.",
+      apis: ["detection"],
+      impact: "+100% automatisation tagging"
     }
   ];
 
@@ -217,13 +252,13 @@ const predictions = await response.json();
         {/* API Overview */}
         <section className="space-y-8">
           <div className="text-center space-y-4">
-            <h2 className="text-4xl font-sf font-semibold text-foreground">Trois APIs. Infinies possibilités.</h2>
+            <h2 className="text-4xl font-sf font-semibold text-foreground">Quatre APIs. Infinies possibilités.</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Des outils pensés pour s'intégrer naturellement dans votre écosystème existant.
+              Des outils pensés pour s'intégrer naturellement dans votre écosystème existant : recherche, segmentation, classification et détection d'objets mode.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
             {apis.map((api) => (
               <Card key={api.id} className="relative group hover:shadow-medium transition-all duration-300">
                 <CardHeader className="pb-4">
@@ -269,19 +304,19 @@ const predictions = await response.json();
             </TabsList>
             
             <TabsContent value="search">
-              <ImageSearchDemo />
+              <ImageSearchDemo fetchCredits={fetchCredits} userId={user?.id} />
             </TabsContent>
             
             <TabsContent value="segmentation">
-              <SegmentationDemo />
+              <SegmentationDemo fetchCredits={fetchCredits} userId={user?.id} />
             </TabsContent>
             
             <TabsContent value="classification">
-              <ClassificationDemo />
+              <ClassificationDemo fetchCredits={fetchCredits} userId={user?.id} />
             </TabsContent>
 
             <TabsContent value="detection">
-              <ObjectDetectionDemo />
+              <ObjectDetectionDemo fetchCredits={fetchCredits} userId={user?.id} />
             </TabsContent>
           </Tabs>
         </section>
@@ -298,10 +333,11 @@ const predictions = await response.json();
           </div>
 
           <Tabs defaultValue="search" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1">
+            <TabsList className="grid w-full grid-cols-4 bg-muted/50 p-1">
               <TabsTrigger value="search" className="font-inter">Recherche</TabsTrigger>
               <TabsTrigger value="segmentation" className="font-inter">Segmentation</TabsTrigger>
               <TabsTrigger value="classification" className="font-inter">Classification</TabsTrigger>
+              <TabsTrigger value="detection" className="font-inter">Détection objets</TabsTrigger>
             </TabsList>
             
             {Object.entries(codeExamples).map(([key, code]) => (
@@ -353,7 +389,7 @@ const predictions = await response.json();
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
             {useCases.map((useCase, index) => (
               <Card key={index} className="hover:shadow-medium transition-all duration-300">
                 <CardHeader>

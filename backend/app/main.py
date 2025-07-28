@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
 from app.api import cross_modal, multi_label, segmentation, object_detection
-
+    
 app = FastAPI(title="Fashion Vision API")
 
 app.add_middleware(

@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import React from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DetectedObject {
   label: string;
@@ -12,7 +13,8 @@ interface DetectedObject {
   box: [number, number, number, number];
 }
 
-const ObjectDetectionDemo = () => {
+type Props = { fetchCredits: (userId: string) => void, userId: string };
+const ObjectDetectionDemo = ({ fetchCredits, userId }: Props) => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [detectedObjects, setDetectedObjects] = useState<DetectedObject[]>([]);
@@ -40,14 +42,32 @@ const ObjectDetectionDemo = () => {
     try {
       const formData = new FormData();
       formData.append("image", selectedImage);
+      // Récupérer le token Supabase
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+      if (!token) {
+        toast.error("Utilisateur non authentifié");
+        setIsLoading(false);
+        return;
+      }
       const res = await fetch("http://localhost:8000/api/v1/detect/", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Authorization": `Bearer ${token}`
+        },
+        body: formData
       });
-      if (!res.ok) throw new Error("Erreur API");
-      const data = await res.json();
-      setDetectedObjects(data.detected_objects || []);
+      if (!res.ok) {
+        if (res.status === 402) {
+          toast.error("Vous n'avez plus de crédits. Rechargez votre compte pour continuer à utiliser l'API.");
+          return;
+        }
+        throw new Error("Erreur API");
+      }
+      const dataRes = await res.json();
+      setDetectedObjects(dataRes.detected_objects || []);
       toast.success("Détection terminée");
+      if (userId) fetchCredits(userId);
     } catch (e: any) {
       toast.error(e.message || "Erreur lors de la détection");
     } finally {

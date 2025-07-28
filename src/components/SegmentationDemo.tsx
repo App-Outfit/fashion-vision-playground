@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Upload, Scissors, Image as ImageIcon, Loader2, Download } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
-const SegmentationDemo = () => {
+type Props = { fetchCredits: (userId: string) => void, userId: string };
+const SegmentationDemo = ({ fetchCredits, userId }: Props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [segmentationResult, setSegmentationResult] = useState<any>(null);
@@ -29,14 +31,32 @@ const SegmentationDemo = () => {
     try {
       const formData = new FormData();
       formData.append("image", selectedImage);
+      // Ajout récupération token Supabase
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+      if (!token) {
+        toast.error("Utilisateur non authentifié");
+        setIsLoading(false);
+        return;
+      }
       const res = await fetch("http://localhost:8000/api/v1/segment/", {
         method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        },
         body: formData,
       });
-      if (!res.ok) throw new Error("Erreur API");
-      const data = await res.json();
-      setSegmentationResult(data.result || data.data || data);
+      if (!res.ok) {
+        if (res.status === 402) {
+          toast.error("Vous n'avez plus de crédits. Rechargez votre compte pour continuer à utiliser l'API.");
+          return;
+        }
+        throw new Error("Erreur API");
+      }
+      const dataRes = await res.json();
+      setSegmentationResult(dataRes.result || dataRes.data || dataRes);
       toast.success("Segmentation terminée");
+      if (userId) fetchCredits(userId);
     } catch (e: any) {
       toast.error(e.message || "Erreur lors de la segmentation");
     } finally {

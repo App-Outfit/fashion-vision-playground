@@ -7,8 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Upload, Tag, Image as ImageIcon, Loader2, Plus, X } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
-const ClassificationDemo = () => {
+type Props = { fetchCredits: (userId: string) => void, userId: string };
+const ClassificationDemo = ({ fetchCredits, userId }: Props) => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [customLabels, setCustomLabels] = useState<string[]>(["t-shirt", "robe", "pull", "pantalon", "veste"]);
@@ -50,14 +52,32 @@ const ClassificationDemo = () => {
       const formData = new FormData();
       formData.append("image", selectedImage);
       formData.append("labels", customLabels.join(","));
+      // Ajout récupération token Supabase
+      const { data } = await supabase.auth.getSession();
+      const token = data.session?.access_token;
+      if (!token) {
+        toast.error("Utilisateur non authentifié");
+        setIsLoading(false);
+        return;
+      }
       const res = await fetch("http://localhost:8000/api/v1/classify/", {
         method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        },
         body: formData,
       });
-      if (!res.ok) throw new Error("Erreur API");
-      const data = await res.json();
-      setResults(data.results || []);
+      if (!res.ok) {
+        if (res.status === 402) {
+          toast.error("Vous n'avez plus de crédits. Rechargez votre compte pour continuer à utiliser l'API.");
+          return;
+        }
+        throw new Error("Erreur API");
+      }
+      const dataRes = await res.json();
+      setResults(dataRes.results || []);
       toast.success("Classification terminée");
+      if (userId) fetchCredits(userId);
     } catch (e: any) {
       toast.error(e.message || "Erreur lors de la classification");
     } finally {
