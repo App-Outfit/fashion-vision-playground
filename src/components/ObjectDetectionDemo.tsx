@@ -6,11 +6,18 @@ import { ScanBarcode, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import React from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { BACKEND_URL } from "@/lib/utils";
 
 interface DetectedObject {
   label: string;
   score: number;
   box: [number, number, number, number];
+}
+
+interface SearchResult {
+  image_path: string;
+  label: string;
+  score: number;
 }
 
 type Props = { fetchCredits: (userId: string) => void, userId: string };
@@ -21,6 +28,8 @@ const ObjectDetectionDemo = ({ fetchCredits, userId }: Props) => {
   const [isLoading, setIsLoading] = useState(false);
   const imageRef = useRef<HTMLImageElement>(null);
   const [crops, setCrops] = useState<string[]>([]); // base64 crops
+  const [similarResults, setSimilarResults] = useState<Array<SearchResult[]>>([]);
+  const [loadingSimilars, setLoadingSimilars] = useState<number | null>(null);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -28,6 +37,8 @@ const ObjectDetectionDemo = ({ fetchCredits, userId }: Props) => {
       setSelectedImage(file);
       setImageUrl(URL.createObjectURL(file));
       setDetectedObjects([]);
+      setCrops([]);
+      setSimilarResults([]);
       toast.success("Image uploadée");
     }
   };
@@ -73,6 +84,24 @@ const ObjectDetectionDemo = ({ fetchCredits, userId }: Props) => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const exampleImages = [
+    "/images/look1.jpg",
+    "/images/look2.jpg",
+    "/images/look3.jpg",
+  ];
+
+  const handleExampleSelect = async (url: string) => {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const file = new File([blob], url.split("/").pop() || "example.jpg", { type: blob.type });
+    setSelectedImage(file);
+    setImageUrl(URL.createObjectURL(file));
+    setDetectedObjects([]);
+    setCrops([]);
+    setSimilarResults([]);
+    toast.success("Image exemple sélectionnée");
   };
 
   // Générer les crops à partir de l'image et des boxes
@@ -159,6 +188,18 @@ const ObjectDetectionDemo = ({ fetchCredits, userId }: Props) => {
           <Label htmlFor="image-upload" className="font-medium">
             Uploadez une image
           </Label>
+          <div className="flex gap-2 mb-4 justify-center">
+            {exampleImages.map((url, idx) => (
+              <img
+                key={idx}
+                src={url}
+                alt={`Exemple ${idx + 1}`}
+                className="w-20 h-20 object-cover rounded cursor-pointer border hover:border-primary transition"
+                onClick={() => handleExampleSelect(url)}
+                title={`Choisir l'exemple ${idx + 1}`}
+              />
+            ))}
+          </div>
           <div className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary/50 transition-colors flex flex-col items-center justify-center min-h-[200px]">
             <input
               type="file"
@@ -236,23 +277,97 @@ const ObjectDetectionDemo = ({ fetchCredits, userId }: Props) => {
         </Button>
         {/* Affichage des crops */}
         {crops.length > 0 && (
-          <div className="flex flex-row flex-wrap gap-4 justify-center mt-4">
-            {crops.map((crop, i) => (
-              <div key={i} className="flex flex-col items-center w-28">
-                <div className="w-24 h-24 bg-muted rounded-lg overflow-hidden flex items-center justify-center border border-border">
-                  {crop ? (
-                    <img src={crop} alt={detectedObjects[i]?.label} className="object-contain w-full h-full" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">N/A</div>
-                  )}
-                </div>
-                <div className="mt-2 text-center">
-                  <div className="font-inter text-xs font-semibold text-foreground">{detectedObjects[i]?.label}</div>
-                  <div className="font-inter text-xs text-muted-foreground">{(detectedObjects[i]?.score * 100).toFixed(1)}%</div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <>
+            <div className="text-xs text-muted-foreground mb-2 text-center">
+              Le bouton <b>"Chercher des habits similaires"</b> utilise l'endpoint <code>/api/v1/search/</code>
+            </div>
+            <div className="flex flex-col gap-8 justify-center mt-4">
+              {crops
+                .map((crop, i) => ({ crop, i, y: detectedObjects[i]?.box[1] ?? 0 }))
+                .sort((a, b) => a.y - b.y)
+                .map(({ crop, i }) => (
+                  <div key={i} className="flex flex-col items-center w-full">
+                    <div className="flex flex-row items-center gap-6 w-full justify-center">
+                      <div className="w-32 h-32 bg-muted rounded-lg overflow-hidden flex items-center justify-center border border-border">
+                        {crop ? (
+                          <img src={crop} alt={detectedObjects[i]?.label} className="object-contain w-full h-full" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">N/A</div>
+                        )}
+                      </div>
+                      <div className="ml-4 text-left">
+                        <div className="font-inter text-base font-semibold text-foreground">{detectedObjects[i]?.label}</div>
+                        <div className="font-inter text-sm text-muted-foreground">{(detectedObjects[i]?.score * 100).toFixed(1)}%</div>
+                        {!(/shoe/i.test(detectedObjects[i]?.label || "")) && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="mt-2"
+                            disabled={loadingSimilars === i}
+                            onClick={async () => {
+                              setLoadingSimilars(i);
+                              try {
+                                // Convertir la crop (dataURL) en blob
+                                const res = await fetch(crop);
+                                const blob = await res.blob();
+                                const formData = new FormData();
+                                formData.append("image", blob, `crop_${i}.png`);
+                                // Auth token
+                                const { data } = await supabase.auth.getSession();
+                                const token = data.session?.access_token;
+                                if (!token) {
+                                  toast.error("Utilisateur non authentifié");
+                                  setLoadingSimilars(null);
+                                  return;
+                                }
+                                const searchRes = await fetch(`${BACKEND_URL}/api/v1/search/`, {
+                                  method: "POST",
+                                  headers: {
+                                    "Authorization": `Bearer ${token}`
+                                  },
+                                  body: formData
+                                });
+                                if (!searchRes.ok) throw new Error("Erreur API search");
+                                const searchData = await searchRes.json();
+                                const results = searchData.results?.slice(0, 4) || [];
+                                setSimilarResults((prev) => {
+                                  const copy = [...prev];
+                                  copy[i] = results;
+                                  return copy;
+                                });
+                              } catch (e: any) {
+                                toast.error(e.message || "Erreur recherche similaires");
+                              } finally {
+                                setLoadingSimilars(null);
+                              }
+                            }}
+                          >
+                            {loadingSimilars === i ? <Loader2 className="w-4 h-4 animate-spin" /> : "Chercher des habits similaires"}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    {/* Affichage des habits similaires */}
+                    {similarResults[i] && similarResults[i].length > 0 && (
+                      <div className="flex flex-row gap-6 mt-6 justify-center w-full">
+                        {similarResults[i].map((sim, j) => (
+                          <div key={j} className="flex flex-col items-center w-32">
+                            <div className="w-24 h-24 bg-muted rounded border flex items-center justify-center overflow-hidden">
+                              <img
+                                src={sim.image_path.startsWith("http") ? sim.image_path : `${BACKEND_URL}/static/${sim.image_path}`}
+                                alt={sim.label}
+                                className="object-contain w-full h-full"
+                              />
+                            </div>
+                            <div className="text-xs text-center mt-2 truncate max-w-[96px]">{sim.label}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+            </div>
+          </>
         )}
       </CardContent>
     </Card>

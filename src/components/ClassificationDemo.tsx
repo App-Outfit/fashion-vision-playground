@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Upload, Tag, Image as ImageIcon, Loader2, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { BACKEND_URL } from "@/lib/utils";
 
 type Props = { fetchCredits: (userId: string) => void, userId: string };
 const ClassificationDemo = ({ fetchCredits, userId }: Props) => {
@@ -60,7 +61,7 @@ const ClassificationDemo = ({ fetchCredits, userId }: Props) => {
         setIsLoading(false);
         return;
       }
-      const res = await fetch("http://localhost:8000/api/v1/classify/", {
+      const res = await fetch(`${BACKEND_URL}/api/v1/classify/`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`
@@ -85,6 +86,20 @@ const ClassificationDemo = ({ fetchCredits, userId }: Props) => {
     }
   };
 
+  const exampleImages = [
+    "/images/look1.jpg",
+    "/images/look2.jpg",
+    "/images/look3.jpg",
+  ];
+
+  const handleExampleSelect = async (url: string) => {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const file = new File([blob], url.split("/").pop() || "example.jpg", { type: blob.type });
+    setSelectedImage(file);
+    toast.success("Image exemple sélectionnée");
+  };
+
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
@@ -100,8 +115,20 @@ const ClassificationDemo = ({ fetchCredits, userId }: Props) => {
       </CardHeader>
       
       <CardContent className="space-y-6">
-        <div>
+        <div className="space-y-3">
           <Label htmlFor="class-image-upload">Uploadez une image</Label>
+          <div className="flex gap-2 mb-4 justify-center">
+            {exampleImages.map((url, idx) => (
+              <img
+                key={idx}
+                src={url}
+                alt={`Exemple ${idx + 1}`}
+                className="w-20 h-20 object-cover rounded cursor-pointer border hover:border-primary transition"
+                onClick={() => handleExampleSelect(url)}
+                title={`Choisir l'exemple ${idx + 1}`}
+              />
+            ))}
+          </div>
           <div className="mt-2 flex flex-col items-center">
             <input
               id="class-image-upload"

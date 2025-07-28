@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Upload, Scissors, Image as ImageIcon, Loader2, Download } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { BACKEND_URL } from "@/lib/utils";
 
 type Props = { fetchCredits: (userId: string) => void, userId: string };
 const SegmentationDemo = ({ fetchCredits, userId }: Props) => {
@@ -39,7 +40,7 @@ const SegmentationDemo = ({ fetchCredits, userId }: Props) => {
         setIsLoading(false);
         return;
       }
-      const res = await fetch("http://localhost:8000/api/v1/segment/", {
+      const res = await fetch(`${BACKEND_URL}/api/v1/segment/`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`
@@ -66,6 +67,20 @@ const SegmentationDemo = ({ fetchCredits, userId }: Props) => {
 
   const downloadMask = () => {
     toast.success("Masque téléchargé");
+  };
+
+  const exampleImages = [
+    "/images/look1.jpg",
+    "/images/look2.jpg",
+    "/images/look3.jpg",
+  ];
+
+  const handleExampleSelect = async (url: string) => {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const file = new File([blob], url.split("/").pop() || "example.jpg", { type: blob.type });
+    setSelectedImage(file);
+    toast.success("Image exemple sélectionnée");
   };
 
   // Hardcoded color mapping for all labels (HEX)
@@ -122,6 +137,18 @@ const SegmentationDemo = ({ fetchCredits, userId }: Props) => {
       <CardContent className="space-y-6">
         <div>
           <Label htmlFor="seg-image-upload">Uploadez une image</Label>
+          <div className="flex gap-2 mb-4 justify-center">
+            {exampleImages.map((url, idx) => (
+              <img
+                key={idx}
+                src={url}
+                alt={`Exemple ${idx + 1}`}
+                className="w-20 h-20 object-cover rounded cursor-pointer border hover:border-primary transition"
+                onClick={() => handleExampleSelect(url)}
+                title={`Choisir l'exemple ${idx + 1}`}
+              />
+            ))}
+          </div>
           <div className="mt-2">
             <input
               id="seg-image-upload"
@@ -130,23 +157,32 @@ const SegmentationDemo = ({ fetchCredits, userId }: Props) => {
               onChange={handleImageUpload}
               className="hidden"
             />
-            <Button
-              variant="outline"
-              onClick={() => document.getElementById('seg-image-upload')?.click()}
-              className="w-full h-32 flex flex-col gap-2"
-            >
-              {selectedImage ? (
-                <>
-                  <ImageIcon className="w-8 h-8" />
-                  <span>{selectedImage.name}</span>
-                </>
-              ) : (
-                <>
-                  <Upload className="w-8 h-8" />
-                  <span>Cliquez pour uploader une image</span>
-                </>
-              )}
-            </Button>
+            {selectedImage ? (
+              <div className="flex flex-col items-center w-full mb-2">
+                <img
+                  src={URL.createObjectURL(selectedImage)}
+                  alt="uploaded"
+                  className="object-contain h-24 w-auto rounded shadow mb-2"
+                />
+                <span className="font-inter text-xs text-muted-foreground mb-2">{selectedImage.name}</span>
+                <Button
+                  variant="outline"
+                  onClick={() => setSelectedImage(null)}
+                  size="sm"
+                >
+                  Supprimer l'image
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={() => document.getElementById('seg-image-upload')?.click()}
+                className="w-full h-32 flex flex-col gap-2"
+              >
+                <Scissors className="w-8 h-8 text-muted-foreground" />
+                <span className="font-inter text-muted-foreground">Télécharger une image</span>
+              </Button>
+            )}
           </div>
         </div>
 

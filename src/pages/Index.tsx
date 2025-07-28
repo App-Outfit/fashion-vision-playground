@@ -12,6 +12,7 @@ import SegmentationDemo from "@/components/SegmentationDemo";
 import ClassificationDemo from "@/components/ClassificationDemo";
 import ObjectDetectionDemo from "@/components/ObjectDetectionDemo";
 import { toast } from "sonner";
+import { BACKEND_URL } from "@/lib/utils";
 
 function TokenDev() {
   const [token, setToken] = useState("");
@@ -171,7 +172,7 @@ const Index = () => {
     search: `# Recherche cross-modal (Python)
 import requests
 
-API_URL = "http://localhost:8000/api/v1/search/"
+API_URL = "${BACKEND_URL}/api/v1/search/"
 TOKEN = "VOTRE_TOKEN_ICI"
 
 files = {
@@ -191,7 +192,7 @@ print(response.json())
     segmentation: `# Segmentation (Python)
 import requests
 
-API_URL = "http://localhost:8000/api/v1/segment/"
+API_URL = "${BACKEND_URL}/api/v1/segment/"
 TOKEN = "VOTRE_TOKEN_ICI"
 
 with open("image.jpg", "rb") as f:
@@ -205,7 +206,7 @@ print(response.json())
     classification: `# Classification multi-label (Python)
 import requests
 
-API_URL = "http://localhost:8000/api/v1/classify/"
+API_URL = "${BACKEND_URL}/api/v1/classify/"
 TOKEN = "VOTRE_TOKEN_ICI"
 
 files = {"image": open("image.jpg", "rb")}
@@ -219,7 +220,7 @@ print(response.json())
     detection: `# Détection d'objets mode (Python)
 import requests
 
-API_URL = "http://localhost:8000/api/v1/detect/"
+API_URL = "${BACKEND_URL}/api/v1/detect/"
 TOKEN = "VOTRE_TOKEN_ICI"
 
 with open("image.jpg", "rb") as f:

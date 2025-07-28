@@ -8,6 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { Upload, Search, Image as ImageIcon, Loader2, Type, Camera, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { BACKEND_URL } from "@/lib/utils";
 
 type Props = { fetchCredits: (userId: string) => void, userId: string };
 const ImageSearchDemo = ({ fetchCredits, userId }: Props) => {
@@ -24,6 +25,20 @@ const ImageSearchDemo = ({ fetchCredits, userId }: Props) => {
       setSelectedImage(file);
       toast.success("Image téléchargée");
     }
+  };
+
+  const exampleImages = [
+    "/images/look1.jpg",
+    "/images/look2.jpg",
+    "/images/look3.jpg",
+  ];
+
+  const handleExampleSelect = async (url: string) => {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const file = new File([blob], url.split("/").pop() || "example.jpg", { type: blob.type });
+    setSelectedImage(file);
+    toast.success("Image exemple sélectionnée");
   };
 
   // Reset image or text when switching tabs
@@ -66,7 +81,7 @@ const ImageSearchDemo = ({ fetchCredits, userId }: Props) => {
         setIsLoading(false);
         return;
       }
-      const res = await fetch("http://localhost:8000/api/v1/search/", {
+      const res = await fetch(`${BACKEND_URL}/api/v1/search/`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`
@@ -139,6 +154,18 @@ const ImageSearchDemo = ({ fetchCredits, userId }: Props) => {
           <TabsContent value="image" className="space-y-6">
             <div className="space-y-3">
               <Label className="font-inter font-medium">Image de référence</Label>
+              <div className="flex gap-2 mb-4 justify-center">
+                {exampleImages.map((url, idx) => (
+                  <img
+                    key={idx}
+                    src={url}
+                    alt={`Exemple ${idx + 1}`}
+                    className="w-20 h-20 object-cover rounded cursor-pointer border hover:border-primary transition"
+                    onClick={() => handleExampleSelect(url)}
+                    title={`Choisir l'exemple ${idx + 1}`}
+                  />
+                ))}
+              </div>
               <div className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary/50 transition-colors flex flex-col items-center justify-center min-h-[200px]">
                 <input
                   type="file"
@@ -325,7 +352,11 @@ const ImageSearchDemo = ({ fetchCredits, userId }: Props) => {
                   >
                     <div className="bg-gradient-secondary h-32 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
                       {result.image_path ? (
-                        <img src={`http://localhost:8000/static/${result.image_path}`} alt={result.label} className="object-contain h-full w-full" />
+                        <img
+                          src={result.image_path.startsWith("http") ? result.image_path : `${BACKEND_URL}/static/${result.image_path}`}
+                          alt={result.label}
+                          className="object-contain h-full w-full"
+                        />
                       ) : (
                         <ImageIcon className="w-8 h-8 text-muted-foreground" />
                       )}
