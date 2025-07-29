@@ -61,7 +61,7 @@ const ObjectDetectionDemo = ({ fetchCredits, userId }: Props) => {
         setIsLoading(false);
         return;
       }
-      const res = await fetch("http://localhost:8000/api/v1/detect/", {
+      const res = await fetch(`${BACKEND_URL}/api/v1/detect/`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`
