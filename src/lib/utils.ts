@@ -5,4 +5,4 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export const BACKEND_URL = "http://fashion-vision-api.wearit-paris.com";
+export const BACKEND_URL = "https://fashion-vision-api.wearit-paris.com";
